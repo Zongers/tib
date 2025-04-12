@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="https://i.ibb.co/RpCzFrqK/icon.png" type="image/png">
+    <title>Temp Input Box</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #75ba1a;
+            --secondary: #fb0088;
+            --light: #FFFFFF;
+            --dark: #292929;
+            --bg: #F7F7F7;
+            --border: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 77px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-family: monospace;
+            resize: vertical;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .input-box:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .btn-space {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-enter {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-paste {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-keyboard"></i> Input Box</h1>
+        
+        <textarea class="input-box" id="inputData" placeholder="Type or paste your text here..."></textarea>
+        
+        <div class="buttons">
+            <button class="btn btn-space" onclick="insertText(' ')">
+                <i class="fas fa-space"></i> Space
+            </button>
+            <button class="btn btn-enter" onclick="insertText('\n')">
+                <i class="fas fa-arrow-down"></i> Enter
+            </button>
+            <button class="btn btn-paste" onclick="pasteText()">
+                <i class="fas fa-paste"></i> Paste
+            </button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <i class="fas fa-check"></i> Text pasted!
+    </div>
+
+    <script>
+        // Insert text at cursor position
+        function insertText(text) {
+            const input = document.getElementById('inputData');
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            
+            // Insert the text
+            input.value = input.value.substring(0, start) + text + input.value.substring(end);
+            
+            // Move cursor to after the inserted text
+            input.selectionStart = input.selectionEnd = start + text.length;
+            input.focus();
+        }
+
+        // Paste text at cursor position
+        function pasteText() {
+            const input = document.getElementById('inputData');
+            input.focus();
+            
+            // Try modern clipboard API first
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                navigator.clipboard.readText()
+                    .then(text => {
+                        const start = input.selectionStart;
+                        const end = input.selectionEnd;
+                        
+                        // Insert at cursor position
+                        input.value = input.value.substring(0, start) + text + input.value.substring(end);
+                        
+                        // Move cursor
+                        input.selectionStart = input.selectionEnd = start + text.length;
+                        showNotification();
+                    })
+                    .catch(err => {
+                        console.error('Failed to read clipboard:', err);
+                        fallbackPaste();
+                    });
+            } else {
+                fallbackPaste();
+            }
+        }
+
+        // Fallback for browsers without modern clipboard API
+        function fallbackPaste() {
+            const input = document.getElementById('inputData');
+            input.focus();
+            document.execCommand('paste');
+            showNotification();
+        }
+
+        // Show notification
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }
+
+        // Focus input on page load
+        window.onload = function() {
+            document.getElementById('inputData').focus();
+        };
+    </script>
+</body>
+</html>
